@@ -26,10 +26,18 @@ public class Chunk : MonoBehaviour
     {
         GetComponent<MeshFilter>().mesh = mesh = new Mesh();
         mesh.name = "Grid";
-
-        for (int ti = 0, vi = 0, y = 0; y < HEIGHT; y++, vi++)
+        for (int i = 0; i < HEIGHT; i++)
         {
-            for (int x = 0; x < WIDTH; x++, ti += 6, vi++)
+            for (int j = 0; j < WIDTH; j++)
+            {
+                int tileId = Random.Range(1, 3);
+                blocks[i, j] = tileId;
+            }
+        }
+
+        for (int y = 0; y < HEIGHT; y++)
+        {
+            for (int x = 0; x < WIDTH; x++)
             {
                 if (blocks[y, x] == 1)
                 {
@@ -62,7 +70,7 @@ public class Chunk : MonoBehaviour
     }
     private void Update()
     {
-        Update();
+        UpdateMesh();
     }
     void UpdateMesh()
     {
@@ -72,11 +80,6 @@ public class Chunk : MonoBehaviour
         mesh.uv = uv.ToArray();
         mesh.Optimize();
         mesh.RecalculateNormals();
-
-        squareCount = 0;
-        vertices.Clear();
-        triangles.Clear();
-        uv.Clear();
     }
     private void OnDrawGizmos()
     {
@@ -88,17 +91,6 @@ public class Chunk : MonoBehaviour
         for (int i = 0; i < vertices.Count; i++)
         {
             Gizmos.DrawSphere(vertices[i], 0.1f);
-        }
-    }
-    void GenerateBlock(int width, int height)
-    {
-        for (int i = 0; i < height; i++)
-        {
-            for (int j = 0; j < width; j++)
-            {
-                int tileId = Random.Range(1, 3);
-                blocks[i, j] = tileId;
-            }
         }
     }
 }
