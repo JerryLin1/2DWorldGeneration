@@ -4,9 +4,12 @@ using UnityEngine;
 
 public class Chunk : MonoBehaviour
 {
-    int WIDTH = 8;
-    int HEIGHT = 5;
-    public float SCALE = 0.5f;
+    int WIDTH_RENDERED = 100;
+    int HEIGHT_RENDERED = 80;
+
+    // the percentage of the width of the spritesheet that each tile takes up
+    // Remember, spritesheet must be square
+    float tileScale = 0.5f;
     int[,] blocks;
     Mesh mesh;
     List<Vector3> vertices = new List<Vector3>();
@@ -18,42 +21,48 @@ public class Chunk : MonoBehaviour
     private Vector2 tDirt = new Vector2(1, 0);
     private void Start()
     {
-        blocks = new int[HEIGHT, WIDTH];
+        blocks = new int[HEIGHT_RENDERED, WIDTH_RENDERED];
         Generate();
     }
     void Generate()
     {
         GetComponent<MeshFilter>().mesh = mesh = new Mesh();
         mesh.name = "Grid";
-        for (int i = 0; i < HEIGHT; i++)
+        for (int i = 0; i < HEIGHT_RENDERED; i++)
         {
-            for (int j = 0; j < WIDTH; j++)
+            for (int j = 0; j < WIDTH_RENDERED; j++)
             {
-                int tileId = Random.Range(1, 3);
+                int tileId = Random.Range(0, 3);
                 blocks[i, j] = tileId;
             }
         }
-
-        for (int y = 0; y < HEIGHT; y++)
+        GenMesh();
+        UpdateMesh();
+    }
+    void GenMesh()
+    {
+        for (int y = 0; y < HEIGHT_RENDERED; y++)
         {
-            for (int x = 0; x < WIDTH; x++)
+            for (int x = 0; x < WIDTH_RENDERED; x++)
             {
-                Vector2 tileToUse = tDirt;
-                switch (blocks[y, x])
+                if (blocks[y, x] != 0)
                 {
-                    case 1:
-                        tileToUse = tDirt;
-                        break;
+                    Vector2 tileToUse = tDirt;
+                    switch (blocks[y, x])
+                    {
+                        case 1:
+                            tileToUse = tDirt;
+                            break;
 
-                    case 2:
-                        tileToUse = tStone;
-                        break;
+                        case 2:
+                            tileToUse = tStone;
+                            break;
+                    }
+
+                    GenSquare(x, y, tileToUse);
                 }
-
-                GenSquare(x, y, tileToUse);
             }
         }
-        // UpdateMesh();
     }
     void GenSquare(int x, int y, Vector2 texture)
     {
@@ -72,10 +81,10 @@ public class Chunk : MonoBehaviour
         triangles.Add((squareCount * 4) + 3);
 
         // Add 4 texture vertices around the block of the specific type
-        uv.Add(new Vector2(SCALE * texture.x, SCALE * texture.y + SCALE));
-        uv.Add(new Vector2(SCALE * texture.x + SCALE, SCALE * texture.y + SCALE));
-        uv.Add(new Vector2(SCALE * texture.x + SCALE, SCALE * texture.y));
-        uv.Add(new Vector2(SCALE * texture.x, SCALE * texture.y));
+        uv.Add(new Vector2(tileScale * texture.x, tileScale * texture.y + tileScale));
+        uv.Add(new Vector2(tileScale * texture.x + tileScale, tileScale * texture.y + tileScale));
+        uv.Add(new Vector2(tileScale * texture.x + tileScale, tileScale * texture.y));
+        uv.Add(new Vector2(tileScale * texture.x, tileScale * texture.y));
 
         squareCount++;
     }
@@ -98,9 +107,9 @@ public class Chunk : MonoBehaviour
         mesh.RecalculateNormals();
 
         squareCount = 0;
-        vertices.Clear();
-        triangles.Clear();
-        uv.Clear();
+        // vertices.Clear();
+        // triangles.Clear();
+        // uv.Clear();
     }
     // private void OnDrawGizmos()
     // {
