@@ -15,6 +15,13 @@ public class Chunk : MonoBehaviour
     List<Vector3> vertices = new List<Vector3>();
     List<Vector2> uv = new List<Vector2>();
     List<int> triangles = new List<int>();
+
+    // vertices and triangles for collider
+    List<Vector3> colVertices = new List<Vector3>();
+    List<int> colTriangles = new List<int>();
+    MeshCollider col;
+    int colCount;
+
     int squareCount = 0;
 
     private Vector2 tStone = new Vector2(0, 0);
@@ -22,12 +29,20 @@ public class Chunk : MonoBehaviour
     private void Start()
     {
         blocks = new int[HEIGHT_RENDERED, WIDTH_RENDERED];
+        GenerateRandom();
         Generate();
     }
     void Generate()
     {
         GetComponent<MeshFilter>().mesh = mesh = new Mesh();
+        col = GetComponent<MeshCollider>();
         mesh.name = "Grid";
+
+        GenMesh();
+        UpdateMesh();
+    }
+    void GenerateRandom()
+    {
         for (int i = 0; i < HEIGHT_RENDERED; i++)
         {
             for (int j = 0; j < WIDTH_RENDERED; j++)
@@ -36,8 +51,6 @@ public class Chunk : MonoBehaviour
                 blocks[i, j] = tileId;
             }
         }
-        GenMesh();
-        UpdateMesh();
     }
     void GenMesh()
     {
@@ -58,7 +71,7 @@ public class Chunk : MonoBehaviour
                             tileToUse = tStone;
                             break;
                     }
-
+                    GenCollider(x,y);
                     GenSquare(x, y, tileToUse);
                 }
             }
@@ -97,6 +110,24 @@ public class Chunk : MonoBehaviour
         mesh.Optimize();
         mesh.RecalculateNormals();
     }
+    void GenCollider(int x, int y)
+    {
+        // Add 4 vertices around the block
+        colVertices.Add(new Vector3(x, y));
+        colVertices.Add(new Vector3(x + 1, y));
+        colVertices.Add(new Vector3(x + 1, y - 1));
+        colVertices.Add(new Vector3(x, y - 1, 0));
+
+        // Add 6 triangle points to form 2 right angled triangles to form a square
+        colTriangles.Add(squareCount * 4);
+        colTriangles.Add((squareCount * 4) + 1);
+        colTriangles.Add((squareCount * 4) + 3);
+        colTriangles.Add((squareCount * 4) + 1);
+        colTriangles.Add((squareCount * 4) + 2);
+        colTriangles.Add((squareCount * 4) + 3);
+
+        colCount++;
+    }
     void UpdateMesh()
     {
         mesh.Clear();
@@ -110,6 +141,16 @@ public class Chunk : MonoBehaviour
         // vertices.Clear();
         // triangles.Clear();
         // uv.Clear();
+
+        Mesh newMesh = new Mesh();
+        newMesh.name = "newMesh";
+        newMesh.vertices = colVertices.ToArray();
+        newMesh.triangles = colTriangles.ToArray();
+        col.sharedMesh = newMesh;
+
+        colVertices.Clear();
+        colTriangles.Clear();
+        colCount = 0;
     }
     // private void OnDrawGizmos()
     // {
