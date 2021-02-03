@@ -12,10 +12,11 @@ public static class WorldGenerator
     // NS = noise scale
     static float dirtNS = 200f;
     static float stoneNS = 50f;
+    static float cavesNS = 100f;
 
     // LR = layer roughness
     static int dirtLR = 10;
-    static int stoneLR = 60;
+    static int stoneLR = 30;
     static int stoneLayerOffset = -10;
     static int groundLevel;
     static int[,] worldData;
@@ -28,6 +29,7 @@ public static class WorldGenerator
 
         PassInitialDirt();
         PassStone();
+        PassCaves();
         PassGrass();
 
         e_worldUpdated.Invoke();
@@ -54,11 +56,30 @@ public static class WorldGenerator
         {
             float sample = Mathf.PerlinNoise(((float)x) / worldWidth * stoneNS + seed + 123, 0);
             // Debug.Log((float)x / worldWidth * noiseScale + seed);
-            int changeInGroundLevel = Mathf.RoundToInt((sample * stoneNS) - stoneNS / 2);
+            int changeInGroundLevel = Mathf.RoundToInt((sample * stoneLR) - stoneLR / 2);
 
             for (int y = 0; y < groundLevel + changeInGroundLevel + stoneLayerOffset; y++)
             {
                 worldData[y, x] = 3;
+            }
+        }
+    }
+
+    static void PassCaves()
+    {
+        for (int x = 10; x < worldWidth - 10; x++)
+        {
+            for (int y = 10; y < groundLevel + stoneLayerOffset; y++)
+            {
+                float sample = Mathf.PerlinNoise(((float)x) / worldWidth * cavesNS + seed + 321, (((float)y) / worldWidth * cavesNS + seed + 321) * 2);
+                if (y > groundLevel)
+                {
+                    if (sample <= 0.2f) SetCell(x, y, 0);
+                }
+                else
+                {
+                    if (sample <= 0.3f) SetCell(x, y, 0);
+                }
             }
         }
     }
