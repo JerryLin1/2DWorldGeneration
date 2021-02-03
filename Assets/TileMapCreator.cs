@@ -30,7 +30,7 @@ public class TileMapCreator : MonoBehaviour
         // Go up by 1 if player spawns in solid, until they aren't
         while (worldData[startPosition.y-1, startPosition.x] != 0)
         {
-            startPosition += new Vector3Int(0, 2, 0);
+            startPosition += new Vector3Int(0, 1, 0);
             playerTransform.position = grid.CellToWorld(startPosition);
         }
         generatedPosition = grid.WorldToCell(playerTransform.position);
