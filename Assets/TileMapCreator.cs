@@ -28,7 +28,7 @@ public class TileMapCreator : MonoBehaviour
         Vector3Int startPosition = grid.WorldToCell(playerTransform.position);
 
         // Go up by 1 if player spawns in solid, until they aren't
-        while (worldData[startPosition.y-1, startPosition.x] != 0)
+        while (worldData[startPosition.y - 1, startPosition.x] != 0)
         {
             startPosition += new Vector3Int(0, 1, 0);
             playerTransform.position = grid.CellToWorld(startPosition);
@@ -53,7 +53,7 @@ public class TileMapCreator : MonoBehaviour
         {
             for (int y = playerPosition.y - (RENDER_DIST_Y / 2); y <= playerPosition.y + (RENDER_DIST_Y / 2); y++)
             {
-                if (tilemapSolid.GetTile(new Vector3Int(x, y, 0)) == null)
+                if (tilemapSolid.GetTile(new Vector3Int(x, y, 0)) == null && IsValidCell(x, y))
                 {
                     // Debug.Log(x+", "+y);
                     int tileId = worldData[y, x];
@@ -64,6 +64,11 @@ public class TileMapCreator : MonoBehaviour
                 }
             }
         }
+    }
+    bool IsValidCell(int x, int y)
+    {
+        if (x >= 0 && x < WorldGenerator.worldWidth && y >= 0 && y < WorldGenerator.worldHeight) return true;
+        return false;
     }
 
     void Update()
