@@ -18,10 +18,13 @@ public static class WorldGenerator
         WorldGenerator.seed = seed;
         groundLevel = 1200 / 2;
         worldData = new int[worldHeight, worldWidth];
-        PassDirt();
+
+        PassInitialDirt();
+        PassGrass();
+
         e_worldUpdated.Invoke();
     }
-    static void PassDirt()
+    static void PassInitialDirt()
     {
         for (int x = 0; x < worldWidth; x++)
         {
@@ -35,6 +38,28 @@ public static class WorldGenerator
             }
         }
     }
+    static void PassGrass()
+    {
+        for (int x = 0; x < worldWidth; x++)
+        {
+            for (int y = 0; y < worldHeight; y++)
+            {
+                if (GetCell(x, y) == 1)
+                {
+                    bool isGrass = true;
+                    for (int h = 1; h <= 5; h++)
+                    {
+                        if (GetCell(x, y + h) != 0)
+                        {
+                            isGrass = false;
+                            break;
+                        }
+                    }
+                    if (isGrass) SetCell(x, y, 2);
+                }
+            }
+        }
+    }
     public static int[,] GetWorldData() { return worldData; }
     public static void DestroyTile(int x, int y)
     {
@@ -45,5 +70,6 @@ public static class WorldGenerator
         if (x >= 0 && x < worldWidth && y >= 0 && y < worldHeight) return true;
         return false;
     }
-    public static int GetCell(int x, int y) {return worldData[y, x];}
+    public static int GetCell(int x, int y) { return worldData[y, x]; }
+    public static void SetCell(int x, int y, int tileId) { worldData[y, x] = tileId; }
 }

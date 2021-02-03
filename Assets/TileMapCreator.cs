@@ -1,4 +1,5 @@
 using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -21,7 +22,7 @@ public class TileMapCreator : MonoBehaviour
         solidObject = transform.GetChild(0).gameObject;
         grid = GetComponent<Grid>();
         tilemapSolid = solidObject.GetComponent<Tilemap>();
-        WorldGenerator.GenerateWorld(Random.Range(0, 10000));
+        WorldGenerator.GenerateWorld(UnityEngine.Random.Range(0, 10000));
         UpdateWorldData();
         player = GameObject.Find("Player");
 
@@ -30,7 +31,9 @@ public class TileMapCreator : MonoBehaviour
         generatedPosition = grid.WorldToCell(cameraTransform.position);
 
         tileL = Resources.FindObjectsOfTypeAll<Tile>();
-        // foreach (Tile t in tileL) Debug.Log(t.name);
+        Array.Reverse(tileL);
+
+        foreach (Tile t in tileL) Debug.Log(t.name);
 
         WorldGenerator.e_worldUpdated.AddListener(UpdateTilemap);
         WorldGenerator.e_worldUpdated.AddListener(ClearAllTiles);
@@ -65,16 +68,10 @@ public class TileMapCreator : MonoBehaviour
     {
         worldData = WorldGenerator.GetWorldData();
         int tileId = worldData[y, x];
-        switch (tileId) {
-            case 0:
-                tilemapSolid.SetTile(new Vector3Int(x, y, 0), null);
-                break;
-            case 1:
-                tilemapSolid.SetTile(new Vector3Int(x, y, 0), tileL[1]);
-                break;
-        }
+        if (tileId == 0) tilemapSolid.SetTile(new Vector3Int(x, y, 0), null);
+        else tilemapSolid.SetTile(new Vector3Int(x, y, 0), tileL[tileId - 1]);
     }
-    void ClearAllTiles() {tilemapSolid.ClearAllTiles();}
+    void ClearAllTiles() { tilemapSolid.ClearAllTiles(); }
     void UpdateWorldData()
     {
         worldData = WorldGenerator.GetWorldData();

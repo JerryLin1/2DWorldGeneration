@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     private Vector2 moveDirection = Vector2.zero;
     Rigidbody2D rb;
     Grid grid;
-    TileMapCreator renderer;
+    TileMapCreator tRenderer;
     Tilemap tilemapSolid;
     Camera cam;
 
@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         cam = GameObject.Find("Main Camera").GetComponent<Camera>();
         grid = GameObject.Find("Grid").GetComponent<Grid>();
-        renderer = grid.transform.GetComponent<TileMapCreator>();
+        tRenderer = grid.transform.GetComponent<TileMapCreator>();
         tilemapSolid = grid.transform.GetChild(0).GetComponent<Tilemap>();
     }
 
@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviour
             Vector3Int mouseTilePos = grid.WorldToCell(mousePos);
             if (WorldGenerator.IsValidCell(mouseTilePos.x, mouseTilePos.y) && WorldGenerator.GetCell(mouseTilePos.x, mouseTilePos.y) != 0) {
                 WorldGenerator.DestroyTile(mouseTilePos.x, mouseTilePos.y);
-                renderer.UpdateTile(mouseTilePos.x, mouseTilePos.y);
+                tRenderer.UpdateTile(mouseTilePos.x, mouseTilePos.y);
             }
         }
         float hAxis = Input.GetAxis("Horizontal");
