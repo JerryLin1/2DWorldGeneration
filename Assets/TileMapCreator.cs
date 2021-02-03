@@ -33,7 +33,7 @@ public class TileMapCreator : MonoBehaviour
         tileL = Resources.FindObjectsOfTypeAll<Tile>();
         Array.Reverse(tileL);
 
-        foreach (Tile t in tileL) Debug.Log(t.name);
+        // foreach (Tile t in tileL) Debug.Log(t.name);
 
         WorldGenerator.e_worldUpdated.AddListener(UpdateTilemap);
         WorldGenerator.e_worldUpdated.AddListener(ClearAllTiles);
