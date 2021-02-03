@@ -6,34 +6,37 @@ using UnityEngine.Tilemaps;
 
 public class TileMapCreator : MonoBehaviour
 {
-    GameObject solidObject;
+    GameObject FgObject;
     Grid grid;
-    Tilemap tilemapSolid;
-    int RENDER_DIST_X = 40;
-    int RENDER_DIST_Y = 25;
+    Tilemap tilemapFg;
+    Tilemap tilemapBg;
+    int RENDER_DIST_X = 80;
+    int RENDER_DIST_Y = 40;
     int REGENERATE_DIST = 25;
     public Transform cameraTransform;
     GameObject player;
-    int[,] worldData;
+    int[,] worldDataFg;
+    int[,] worldDataBg;
     Tile[] tileL;
     Vector3Int generatedPosition;
     void Start()
     {
-        solidObject = transform.GetChild(0).gameObject;
+        FgObject = transform.GetChild(0).gameObject;
         grid = GetComponent<Grid>();
-        tilemapSolid = solidObject.GetComponent<Tilemap>();
+        tilemapFg = grid.transform.GetChild(0).GetComponent<Tilemap>();
+        tilemapBg = grid.transform.GetChild(1).GetComponent<Tilemap>();
         WorldGenerator.GenerateWorld(UnityEngine.Random.Range(0, 10000));
         UpdateWorldData();
         player = GameObject.Find("Player");
 
-        player.transform.position = new Vector3(worldData.GetLength(1) / 2, worldData.GetLength(0) / 2 + 10, 0);
+        player.transform.position = new Vector3(worldDataFg.GetLength(1) / 2, worldDataFg.GetLength(0) / 2 + 10, 0);
 
         generatedPosition = grid.WorldToCell(cameraTransform.position);
 
         tileL = Resources.FindObjectsOfTypeAll<Tile>();
         Array.Reverse(tileL);
 
-        // foreach (Tile t in tileL) Debug.Log(t.name);
+        foreach (Tile t in tileL) Debug.Log(t.name);
 
         WorldGenerator.e_worldUpdated.AddListener(UpdateTilemap);
         WorldGenerator.e_worldUpdated.AddListener(ClearAllTiles);
@@ -44,7 +47,8 @@ public class TileMapCreator : MonoBehaviour
         Vector3Int playerPosition = grid.WorldToCell(cameraTransform.position);
         if (Vector3Int.Distance(playerPosition, generatedPosition) > REGENERATE_DIST)
         {
-            tilemapSolid.ClearAllTiles();
+            tilemapFg.ClearAllTiles();
+            tilemapBg.ClearAllTiles();
             generatedPosition = playerPosition;
         }
         // Iterate through tiles around player
@@ -52,9 +56,13 @@ public class TileMapCreator : MonoBehaviour
         {
             for (int y = playerPosition.y - (RENDER_DIST_Y / 2); y <= playerPosition.y + (RENDER_DIST_Y / 2); y++)
             {
-                if (tilemapSolid.GetTile(new Vector3Int(x, y, 0)) == null && WorldGenerator.IsValidCell(x, y))
+                if (tilemapFg.GetTile(new Vector3Int(x, y, 0)) == null && WorldGenerator.IsValidCell(x, y))
                 {
-                    UpdateTile(x, y);
+                    UpdateTileFg(x, y);
+                }
+                if (tilemapBg.GetTile(new Vector3Int(x, y, 0)) == null && WorldGenerator.IsValidCell(x, y))
+                {
+                    UpdateTileBg(x, y);
                 }
             }
         }
@@ -64,16 +72,24 @@ public class TileMapCreator : MonoBehaviour
     {
         UpdateTilemap();
     }
-    public void UpdateTile(int x, int y)
+    public void UpdateTileFg(int x, int y)
     {
-        worldData = WorldGenerator.GetWorldData();
-        int tileId = worldData[y, x];
-        if (tileId == 0) tilemapSolid.SetTile(new Vector3Int(x, y, 0), null);
-        else tilemapSolid.SetTile(new Vector3Int(x, y, 0), tileL[tileId - 1]);
+        worldDataFg = WorldGenerator.GetWorldDataFg();
+        int tileId = worldDataFg[y, x];
+        if (tileId == 0) tilemapFg.SetTile(new Vector3Int(x, y, 0), null);
+        else tilemapFg.SetTile(new Vector3Int(x, y, 0), tileL[tileId - 1]);
     }
-    void ClearAllTiles() { tilemapSolid.ClearAllTiles(); }
+    public void UpdateTileBg(int x, int y)
+    {
+        worldDataBg = WorldGenerator.GetWorldDataBg();
+        int tileId = worldDataBg[y, x];
+        if (tileId == 0) tilemapBg.SetTile(new Vector3Int(x, y, 0), null);
+        else tilemapBg.SetTile(new Vector3Int(x, y, 0), tileL[tileId - 1]);
+    }
+    void ClearAllTiles() { tilemapFg.ClearAllTiles(); }
     void UpdateWorldData()
     {
-        worldData = WorldGenerator.GetWorldData();
+        worldDataFg = WorldGenerator.GetWorldDataFg();
+        worldDataBg = WorldGenerator.GetWorldDataBg();
     }
 }

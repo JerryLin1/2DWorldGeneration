@@ -19,13 +19,15 @@ public static class WorldGenerator
     static int stoneLR = 30;
     static int stoneLayerOffset = -10;
     static int groundLevel;
-    static int[,] worldData;
+    static int[,] worldDataFg;
+    static int[,] worldDataBg;
     static public UnityEvent e_worldUpdated = new UnityEvent();
     public static void GenerateWorld(float seed)
     {
         WorldGenerator.seed = seed;
         groundLevel = 1200 / 2;
-        worldData = new int[worldHeight, worldWidth];
+        worldDataFg = new int[worldHeight, worldWidth];
+        worldDataBg = new int[worldHeight, worldWidth];
 
         PassInitialDirt();
         PassStone();
@@ -44,7 +46,8 @@ public static class WorldGenerator
             // Debug.Log(changeInGroundLevel);
             for (int y = 0; y < groundLevel + changeInGroundLevel; y++)
             {
-                worldData[y, x] = 1;
+                worldDataFg[y, x] = 1;
+                worldDataBg[y, x] = 1;
             }
         }
     }
@@ -60,7 +63,8 @@ public static class WorldGenerator
 
             for (int y = 0; y < groundLevel + changeInGroundLevel + stoneLayerOffset; y++)
             {
-                worldData[y, x] = 3;
+                worldDataFg[y, x] = 3;
+                worldDataBg[y, x] = 3;
             }
         }
     }
@@ -74,11 +78,11 @@ public static class WorldGenerator
                 float sample = Mathf.PerlinNoise(((float)x) / worldWidth * cavesNS + seed + 321, (((float)y) / worldWidth * cavesNS + seed + 321) * 2);
                 if (y > groundLevel)
                 {
-                    if (sample <= 0.2f) SetCell(x, y, 0);
+                    if (sample <= 0.2f) SetCellFg(x, y, 0);
                 }
                 else
                 {
-                    if (sample <= 0.3f) SetCell(x, y, 0);
+                    if (sample <= 0.3f) SetCellFg(x, y, 0);
                 }
             }
         }
@@ -91,32 +95,37 @@ public static class WorldGenerator
         {
             for (int y = 0; y < worldHeight; y++)
             {
-                if (GetCell(x, y) == 1)
+                if (GetCellFg(x, y) == 1)
                 {
                     bool isGrass = true;
                     for (int h = 1; h <= 5; h++)
                     {
-                        if (GetCell(x, y + h) != 0)
+                        if (GetCellFg(x, y + h) != 0)
                         {
                             isGrass = false;
                             break;
                         }
                     }
-                    if (isGrass) SetCell(x, y, 2);
+                    if (isGrass)
+                    {
+                        SetCellFg(x, y, 2);
+                        SetCellBg(x, y, 2);
+                    }
                 }
             }
         }
     }
-    public static int[,] GetWorldData() { return worldData; }
-    public static void DestroyTile(int x, int y)
-    {
-        worldData[y, x] = 0;
-    }
+    public static int[,] GetWorldDataFg() { return worldDataFg; }
+    public static int[,] GetWorldDataBg() { return worldDataBg; }
+    public static void DestroyTileFg(int x, int y) { worldDataFg[y, x] = 0; }
+    public static void DestroyTileBg(int x, int y) { worldDataBg[y, x] = 0; }
     public static bool IsValidCell(int x, int y)
     {
         if (x >= 0 && x < worldWidth && y >= 0 && y < worldHeight) return true;
         return false;
     }
-    public static int GetCell(int x, int y) { return worldData[y, x]; }
-    public static void SetCell(int x, int y, int tileId) { worldData[y, x] = tileId; }
+    public static int GetCellFg(int x, int y) { return worldDataFg[y, x]; }
+    public static int GetCellBg(int x, int y) { return worldDataBg[y, x]; }
+    public static void SetCellFg(int x, int y, int tileId) { worldDataFg[y, x] = tileId; }
+    public static void SetCellBg(int x, int y, int tileId) { worldDataBg[y, x] = tileId; }
 }

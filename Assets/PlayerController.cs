@@ -49,10 +49,10 @@ public class PlayerController : MonoBehaviour
         {
             Vector3 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
             Vector3Int mouseTilePos = grid.WorldToCell(mousePos);
-            if (WorldGenerator.IsValidCell(mouseTilePos.x, mouseTilePos.y) && WorldGenerator.GetCell(mouseTilePos.x, mouseTilePos.y) != 0)
+            if (WorldGenerator.IsValidCell(mouseTilePos.x, mouseTilePos.y) && WorldGenerator.GetCellFg(mouseTilePos.x, mouseTilePos.y) != 0)
             {
-                WorldGenerator.DestroyTile(mouseTilePos.x, mouseTilePos.y);
-                tRenderer.UpdateTile(mouseTilePos.x, mouseTilePos.y);
+                WorldGenerator.DestroyTileFg(mouseTilePos.x, mouseTilePos.y);
+                tRenderer.UpdateTileFg(mouseTilePos.x, mouseTilePos.y);
             }
         }
         float hAxis = Input.GetAxis("Horizontal");
