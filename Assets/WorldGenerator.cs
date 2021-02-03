@@ -8,18 +8,18 @@ public static class WorldGenerator
     public static int worldWidth { get { return 4200; } }
     public static int worldHeight { get { return 1200; } }
     public static float seed;
-    static float noiseScale = 1000f;
+    static float noiseScale = 200f;
     static int roughness = 10;
     static int groundLevel;
     static int[,] worldData;
-    static public UnityEvent e_worldGenerated = new UnityEvent();
+    static public UnityEvent e_worldUpdated = new UnityEvent();
     public static void GenerateWorld(float seed)
     {
         WorldGenerator.seed = seed;
         groundLevel = 1200 / 2;
         worldData = new int[worldHeight, worldWidth];
         PassDirt();
-        e_worldGenerated.Invoke();
+        e_worldUpdated.Invoke();
     }
     static void PassDirt()
     {
@@ -36,5 +36,14 @@ public static class WorldGenerator
         }
     }
     public static int[,] GetWorldData() { return worldData; }
-
+    public static void DestroyTile(int x, int y)
+    {
+        worldData[y, x] = 0;
+    }
+    public static bool IsValidCell(int x, int y)
+    {
+        if (x >= 0 && x < worldWidth && y >= 0 && y < worldHeight) return true;
+        return false;
+    }
+    public static int GetCell(int x, int y) {return worldData[y, x];}
 }

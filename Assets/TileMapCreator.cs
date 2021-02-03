@@ -11,7 +11,8 @@ public class TileMapCreator : MonoBehaviour
     int RENDER_DIST_X = 40;
     int RENDER_DIST_Y = 25;
     int REGENERATE_DIST = 25;
-    public Transform playerTransform;
+    public Transform cameraTransform;
+    GameObject player;
     int[,] worldData;
     Tile[] tileL;
     Vector3Int generatedPosition;
@@ -21,28 +22,23 @@ public class TileMapCreator : MonoBehaviour
         grid = GetComponent<Grid>();
         tilemapSolid = solidObject.GetComponent<Tilemap>();
         WorldGenerator.GenerateWorld(Random.Range(0, 10000));
-        worldData = WorldGenerator.GetWorldData();
+        UpdateWorldData();
+        player = GameObject.Find("Player");
 
-        playerTransform.position = new Vector3(worldData.GetLength(1) / 2, worldData.GetLength(0) / 2 + 1, 0);
+        player.transform.position = new Vector3(worldData.GetLength(1) / 2, worldData.GetLength(0) / 2 + 10, 0);
 
-        Vector3Int startPosition = grid.WorldToCell(playerTransform.position);
-
-        // Go up by 1 if player spawns in solid, until they aren't
-        while (worldData[startPosition.y - 1, startPosition.x] != 0)
-        {
-            startPosition += new Vector3Int(0, 1, 0);
-            playerTransform.position = grid.CellToWorld(startPosition);
-        }
-        generatedPosition = grid.WorldToCell(playerTransform.position);
+        generatedPosition = grid.WorldToCell(cameraTransform.position);
 
         tileL = Resources.FindObjectsOfTypeAll<Tile>();
         // foreach (Tile t in tileL) Debug.Log(t.name);
 
-        WorldGenerator.e_worldGenerated.AddListener(UpdateTilemap);
+        WorldGenerator.e_worldUpdated.AddListener(UpdateTilemap);
+        WorldGenerator.e_worldUpdated.AddListener(ClearAllTiles);
+        WorldGenerator.e_worldUpdated.AddListener(UpdateWorldData);
     }
     void UpdateTilemap()
     {
-        Vector3Int playerPosition = grid.WorldToCell(playerTransform.position);
+        Vector3Int playerPosition = grid.WorldToCell(cameraTransform.position);
         if (Vector3Int.Distance(playerPosition, generatedPosition) > REGENERATE_DIST)
         {
             tilemapSolid.ClearAllTiles();
@@ -53,26 +49,34 @@ public class TileMapCreator : MonoBehaviour
         {
             for (int y = playerPosition.y - (RENDER_DIST_Y / 2); y <= playerPosition.y + (RENDER_DIST_Y / 2); y++)
             {
-                if (tilemapSolid.GetTile(new Vector3Int(x, y, 0)) == null && IsValidCell(x, y))
+                if (tilemapSolid.GetTile(new Vector3Int(x, y, 0)) == null && WorldGenerator.IsValidCell(x, y))
                 {
-                    // Debug.Log(x+", "+y);
-                    int tileId = worldData[y, x];
-                    if (tileId == 1)
-                    {
-                        tilemapSolid.SetTile(new Vector3Int(x, y, 0), tileL[1]);
-                    }
+                    UpdateTile(x, y);
                 }
             }
         }
-    }
-    bool IsValidCell(int x, int y)
-    {
-        if (x >= 0 && x < WorldGenerator.worldWidth && y >= 0 && y < WorldGenerator.worldHeight) return true;
-        return false;
     }
 
     void Update()
     {
         UpdateTilemap();
+    }
+    public void UpdateTile(int x, int y)
+    {
+        worldData = WorldGenerator.GetWorldData();
+        int tileId = worldData[y, x];
+        switch (tileId) {
+            case 0:
+                tilemapSolid.SetTile(new Vector3Int(x, y, 0), null);
+                break;
+            case 1:
+                tilemapSolid.SetTile(new Vector3Int(x, y, 0), tileL[1]);
+                break;
+        }
+    }
+    void ClearAllTiles() {tilemapSolid.ClearAllTiles();}
+    void UpdateWorldData()
+    {
+        worldData = WorldGenerator.GetWorldData();
     }
 }
