@@ -8,8 +8,15 @@ public static class WorldGenerator
     public static int worldWidth { get { return 4200; } }
     public static int worldHeight { get { return 1200; } }
     public static float seed;
-    static float noiseScale = 200f;
-    static int roughness = 10;
+
+    // NS = noise scale
+    static float dirtNS = 200f;
+    static float stoneNS = 50f;
+
+    // LR = layer roughness
+    static int dirtLR = 10;
+    static int stoneLR = 60;
+    static int stoneLayerOffset = -10;
     static int groundLevel;
     static int[,] worldData;
     static public UnityEvent e_worldUpdated = new UnityEvent();
@@ -20,6 +27,7 @@ public static class WorldGenerator
         worldData = new int[worldHeight, worldWidth];
 
         PassInitialDirt();
+        PassStone();
         PassGrass();
 
         e_worldUpdated.Invoke();
@@ -28,9 +36,9 @@ public static class WorldGenerator
     {
         for (int x = 0; x < worldWidth; x++)
         {
-            float sample = Mathf.PerlinNoise(((float)x) / worldWidth * noiseScale + seed, 0);
+            float sample = Mathf.PerlinNoise(((float)x) / worldWidth * dirtNS + seed, 0);
             // Debug.Log((float)x / worldWidth * noiseScale + seed);
-            int changeInGroundLevel = Mathf.RoundToInt((sample * roughness) - roughness / 2);
+            int changeInGroundLevel = Mathf.RoundToInt((sample * dirtLR) - dirtLR / 2);
             // Debug.Log(changeInGroundLevel);
             for (int y = 0; y < groundLevel + changeInGroundLevel; y++)
             {
@@ -38,6 +46,24 @@ public static class WorldGenerator
             }
         }
     }
+
+    // Turns dirt blocks underground into stone blocks
+    static void PassStone()
+    {
+        for (int x = 0; x < worldWidth; x++)
+        {
+            float sample = Mathf.PerlinNoise(((float)x) / worldWidth * stoneNS + seed + 123, 0);
+            // Debug.Log((float)x / worldWidth * noiseScale + seed);
+            int changeInGroundLevel = Mathf.RoundToInt((sample * stoneNS) - stoneNS / 2);
+
+            for (int y = 0; y < groundLevel + changeInGroundLevel + stoneLayerOffset; y++)
+            {
+                worldData[y, x] = 3;
+            }
+        }
+    }
+
+    // Turns dirt blocks with 5 empty spaces above them into dirt blocks
     static void PassGrass()
     {
         for (int x = 0; x < worldWidth; x++)
